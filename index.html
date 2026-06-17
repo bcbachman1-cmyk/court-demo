@@ -303,6 +303,7 @@
         <option value="OTHER">Somewhere else</option>
       </select>
       <div id="geo"></div>
+      <input class="field" id="loc-where" placeholder="Your city + state (or ZIP)" style="display:none;margin-top:2px" autocomplete="address-level2" aria-label="Where your court would go">
     </section>
 
     <!-- 8 PRICE -->
@@ -375,7 +376,7 @@
   var PKG_NAME = {playReady:"The Play-Ready Court™", bragWorthy:"The Brag-Worthy Court™", renewal:"The Brag-Worthy Renewal™"};
   var WARRANTY = {playReady:"3-year structural warranty", bragWorthy:"Lifetime structural warranty", renewal:"Renewed coating warranty"};
   var STATE_NAME = {AZ:"Arizona",TX:"Texas",ID:"Idaho",CO:"Colorado",WA:"Washington",NV:"Nevada",UT:"Utah",NM:"New Mexico",CA:"California",OTHER:"your area"};
-  // per-area cost zones + service-area gate (demo values)
+  // per-area cost zones (demo values)
   var ZONE = {
     AZ:{f:1.00,t:0,book:true}, TX:{f:1.00,t:1500,book:true}, ID:{f:1.00,t:1500,book:true},
     CO:{f:1.08,t:2000,book:true}, WA:{f:1.18,t:2750,book:true},
@@ -417,9 +418,9 @@
     if(screen===1) return !!S.goal;
     if(screen===3) return !!S.size;
     if(screen===4) return !!S.pkg;
-    if(screen===7) return !!S.state;
+    if(screen===7){ if(!S.state) return false; if(S.state==='OTHER' && !$('#loc-where').value.trim()) return false; return true; }
     if(screen===9){ var ok=!!$('#f-name').value.trim() && !!$('#f-phone').value.trim();
-      return (S.commercial||S.waitlist) ? ok : (ok && !!S.slot); }
+      return S.commercial ? ok : (ok && !!S.slot); }
     return true;
   }
   function refreshNext(){
@@ -427,8 +428,8 @@
     var label='Continue';
     if(screen===6) label='See my estimate →';
     else if(screen===7) label = (S.commercial||resurface()) ? 'Reveal my estimate →' : 'Reveal my estimate →';
-    else if(screen===8) label = S.waitlist ? 'Join the waitlist' : (S.commercial?'Talk to a specialist':'Book my free call');
-    else if(screen===9) label = S.commercial ? 'Request my call' : (S.waitlist?'Join the waitlist':'Confirm booking');
+    else if(screen===8) label = S.commercial?'Talk to a specialist':'Book my free call';
+    else if(screen===9) label = S.commercial ? 'Request my call' : 'Confirm booking';
     n.textContent=label;
     $('#footer').style.display = (screen===0||screen===10) ? 'none' : 'block';
   }
@@ -505,9 +506,6 @@
     var a=$('#book-anchor');
     if(S.commercial){ $('#book-h1').textContent='Talk to a court specialist';
       a.innerHTML='<b>Multi-court / commercial build.</b> Pick a time and a specialist will design + price it with you on a quick call.'; $('#book-slots').style.display='block';
-    } else if(S.waitlist){ $('#book-h1').textContent='Get on the waitlist';
-      a.innerHTML='Here\'s your estimate: <b>'+rangeStr(allIn())+'</b> — and your spot to be <b>first</b> when we launch in '+STATE_NAME[S.state]+'. Leave your details and we\'ll reach out the moment we\'re building there.';
-      $('#book-slots').style.display='none';
     } else { $('#book-h1').textContent='Book your free design call';
       a.innerHTML='Lock in your <b>'+(PKG_NAME[resurface()?'renewal':S.pkg]||'court')+'</b> at <b>'+rangeStr(allIn())+'</b> on a free 15-minute video call.'; $('#book-slots').style.display='block';
     }
@@ -515,7 +513,7 @@
   function prepDone(){
     $('header .progress').style.visibility='hidden';
     var recap='', next='';
-    if(!S.commercial && !S.waitlist){
+    if(!S.commercial){
       recap='<h3>Your court</h3><div class="sumrow"><span class="n">'+(PKG_NAME[resurface()?'renewal':S.pkg]||'Court')+(S.courts>1?' × '+S.courts:'')+'</span><span class="v">'+rangeStr(allIn())+'</span></div>';
       next='<div><span class="num">1</span><div>We\'ll call you '+(S.slot||'')+' to finalize your design + price.</div></div>'+
            '<div><span class="num">2</span><div>If it\'s a fit, a $1,000 deposit locks your build slot.</div></div>'+
@@ -523,9 +521,7 @@
     }
     $('#recap').innerHTML=recap; $('#recap').style.display=recap?'block':'none';
     $('#next3').innerHTML=next;
-    if(S.waitlist){ $('#ok-badge').textContent='✅'; $('#ok-h1').textContent="You're on the list!";
-      $('#ok-msg').textContent="We'll reach out the moment JPC launches in "+STATE_NAME[S.state]+". Thanks for your interest!";
-    } else if(S.commercial){ $('#ok-badge').textContent='🤝'; $('#ok-h1').textContent="Request received!";
+    if(S.commercial){ $('#ok-badge').textContent='🤝'; $('#ok-h1').textContent="Request received!";
       $('#ok-msg').textContent="A court specialist will reach out"+(S.slot?(" around "+S.slot):"")+" to design your project. Talk soon!";
     } else { $('#ok-badge').textContent='🎉'; $('#ok-h1').textContent="You're booked!";
       $('#ok-msg').textContent="We'll see you "+(S.slot||'')+". We'll email you the call details shortly."; }
@@ -548,10 +544,14 @@
     if(k==='access') S.accessFlag = p.getAttribute('data-flag')==='1';
     selGrp('[data-by="'+k+'"]',p); updateEst(); };});
   $('#skip-yard').onclick=function(){ show(7); };
-  $('#state').addEventListener('change',function(){ S.state=this.value; var z=zone(); S.waitlist=!z.book;
-    $('#geo').innerHTML = z.book ? '<div class="info">✅ <b>Good news — we serve '+STATE_NAME[S.state]+'.</b> Continue to see your estimate.</div>'
-      : '<div class="note">🚧 <b>We\'re expanding to '+STATE_NAME[S.state]+' soon.</b> You can still see your estimate and grab a waitlist spot — we\'ll reach out the moment we launch there.</div>';
+  $('#state').addEventListener('change',function(){ S.state=this.value; S.waitlist=false; var w=$('#loc-where');
+    if(S.state==='OTHER'){ w.style.display='block'; w.placeholder='Your city + state (or ZIP)';
+      $('#geo').innerHTML='<div class="info">📍 <b>Tell us where your court would go</b> — then continue to your estimate.</div>';
+    } else { w.style.display='none';
+      $('#geo').innerHTML='<div class="info">✓ Got it. Continue to see your estimate.</div>';
+    }
     updateEst(); refreshNext(); });
+  $('#loc-where').addEventListener('input',function(){ S.where=this.value; refreshNext(); });
   ['f-name','f-email','f-phone'].forEach(function(id){ $('#'+id).addEventListener('input',refreshNext); });
 
   function selOne(sel,el){ $$(sel).forEach(function(x){x.classList.remove('sel');x.setAttribute('aria-checked','false')}); el.classList.add('sel'); el.setAttribute('aria-checked','true'); }
@@ -570,7 +570,6 @@
   $('#back').onclick=function(){ var n=screen-1;
     if(screen===7 && resurface()) n=1;
     else if(screen===9 && S.commercial) n=2;
-    else if(screen===9 && S.waitlist) n=8;
     show(Math.max(0,n)); };
 
   // ---- a11y: roles + keyboard on every choice control ----
