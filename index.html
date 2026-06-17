@@ -73,6 +73,7 @@
   .pill.sel::after{content:"✓";position:absolute;top:6px;right:7px;font-size:11px;color:var(--green);font-weight:800}
   .pill .e{font-size:22px;display:block;margin-bottom:5px} .pill small{display:block;color:var(--mut);font-weight:600;font-size:11px;margin-top:3px}
   .note{background:#fdf7ea;border:1px solid #f0e1bd;color:#6f5314;border-radius:13px;padding:12px 14px;font-size:13px;margin:8px 0 16px;line-height:1.5}
+  .size-note{background:#fdf7ea;border:1px solid #f0e1bd;color:#6f5314;border-radius:11px;padding:9px 13px;font-size:12.5px;margin:-7px 0 12px;line-height:1.45}
   .info{background:#eef6fb;border:1px solid #cfe6f6;color:#1a4d76;border-radius:13px;padding:12px 14px;font-size:13px;margin:8px 0 16px;line-height:1.5}
   .skipbtn{display:inline-block;background:#eef2f5;border:1.5px solid var(--line);color:var(--navy);border-radius:11px;
     padding:11px 16px;font-weight:750;font-size:14px;cursor:pointer;font-family:inherit;margin-bottom:8px}
@@ -213,7 +214,9 @@
       <h1>How much room do you have?</h1>
       <p class="sub">A regulation court is 30×60 ft. Don't sweat exact numbers — we confirm everything at your free site visit.</p>
       <div class="opt" data-size="standard"><div class="opt-l"><span class="icn">✅</span><div><div class="t">Fits a standard court (≈30×60)</div><div class="d">Works for most backyards</div></div></div><div class="chk">✓</div></div>
+      <div class="size-note" id="note-standard" style="display:none">📏 <b>Two courts need more room</b> — roughly double this space, plus ~10 ft between courts. Pick the closest fit and we'll confirm the exact layout at your free visit.</div>
       <div class="opt" data-size="tight"><div class="opt-l"><span class="icn">📐</span><div><div class="t">It's a little tight</div><div class="d">We'll find the best fit</div></div></div><div class="chk">✓</div></div>
+      <div class="size-note" id="note-tight" style="display:none">📏 <b>Two courts likely won't fit a tight space</b> — we'll measure and find the best layout at your visit.</div>
       <div class="opt" data-size="huge"><div class="opt-l"><span class="icn">🌳</span><div><div class="t">Plenty of room / oversized</div><div class="d">Custom-sized + priced at the visit</div></div></div><div class="chk">✓</div></div>
     </section>
 
@@ -448,6 +451,7 @@
     $('header .progress').style.visibility = (n>0&&n<10) ? 'visible':'hidden';
     $('#step-lbl').textContent = (n>0&&n<10) ? ('Step '+Math.min(n,9)+' of 9') : '';
     $('#back').style.visibility = (n>1&&n<10) ? 'visible':'hidden';
+    if(n===3){ var sm=S.courts>=2?'block':'none'; $('#note-standard').style.display=sm; $('#note-tight').style.display=sm; }
     if(n===8){ $('#price-big').classList.remove('settle'); renderSummary(); animatePrice(allIn()); }
     if(n===9) prepBooking();
     if(n===10) prepDone();
