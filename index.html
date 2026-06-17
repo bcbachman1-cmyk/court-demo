@@ -4,8 +4,8 @@
 <title>Just Pickle Courts — Design & Price Your Court</title>
 <style>
   :root{
-    --green:#15924f; --green-d:#0f7a41; --green-l:#1cb863; --court:#0f6e57;
-    --navy:#0e2233; --ink:#1b2b3a; --mut:#566778; --faint:#5b6b7d; --ball:#e4f24d;
+    --green:#6ea020; --green-d:#557d16; --green-l:#84c02a; --court:#4a6e15;
+    --navy:#08252d; --ink:#1b2b3a; --mut:#566778; --faint:#5b6b7d; --ball:#cfe24a;
     --bg:#eaf1f4; --card:#ffffff; --line:#e4ecf1; --kitchen:#1d6fb8; --warn:#9a6212;
     --shadow:0 10px 34px rgba(14,34,51,.10); --shadow-s:0 3px 12px rgba(14,34,51,.07);
     --focus:0 0 0 3px rgba(21,146,79,.45); --r:16px;
@@ -85,7 +85,10 @@
   .field:focus{outline:none;border-color:var(--green);box-shadow:var(--focus)}
   /* hero */
   .hero{padding:8px 0 0;text-align:center}
-  .court-svg{width:100%;max-width:330px;margin:6px auto 4px;display:block;filter:drop-shadow(0 12px 24px rgba(15,110,87,.28))}
+  .logo{height:30px;width:auto;display:block}
+  .hero-photo{border-radius:18px;overflow:hidden;box-shadow:0 14px 34px rgba(8,37,45,.22);margin:6px 0 2px;border:1px solid rgba(8,37,45,.06)}
+  .hero-photo img{width:100%;display:block;aspect-ratio:16/10;object-fit:cover}
+  .pkg-photo{width:100%;height:120px;object-fit:cover;border-radius:11px;margin-bottom:13px;display:block}
   .hero h1{font-size:32px;margin-top:14px}
   .trust-strip{display:flex;justify-content:center;gap:7px;flex-wrap:wrap;margin:16px 0 4px}
   .chip{background:var(--card);border:1px solid var(--line);border-radius:30px;padding:7px 13px;font-size:12px;font-weight:700;
@@ -159,7 +162,7 @@
 <div class="tag">PROTOTYPE</div>
 <div class="app">
   <header>
-    <div class="brand"><span class="mark"></span> Just Pickle Courts</div>
+    <div class="brand"><img class="logo" src="assets/logo.png" alt="Just Pickle Courts" height="30"></div>
     <div class="progress"><span class="steplbl" id="step-lbl"></span><div class="bar"><i id="bar"></i></div></div>
   </header>
   <main>
@@ -167,18 +170,7 @@
     <!-- 0 HERO -->
     <section class="screen on" data-s="0">
       <div class="hero">
-        <svg class="court-svg" viewBox="0 0 300 200" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-          <rect x="6" y="6" width="288" height="188" rx="10" fill="#15924f"/>
-          <rect x="24" y="22" width="252" height="156" rx="3" fill="#1aa85a"/>
-          <rect x="105" y="22" width="90" height="156" fill="#1d6fb8"/>
-          <g stroke="#fff" stroke-width="2.4" fill="none">
-            <rect x="24" y="22" width="252" height="156"/>
-            <line x1="150" y1="22" x2="150" y2="178"/><line x1="105" y1="22" x2="105" y2="178"/><line x1="195" y1="22" x2="195" y2="178"/>
-            <line x1="24" y1="100" x2="105" y2="100"/><line x1="195" y1="100" x2="276" y2="100"/>
-          </g>
-          <line x1="150" y1="14" x2="150" y2="186" stroke="#0e2233" stroke-width="3" stroke-dasharray="4 4" opacity=".55"/>
-          <circle cx="262" cy="36" r="7" fill="#e4f24d" stroke="#b9c92a" stroke-width="1.5"/>
-        </svg>
+        <div class="hero-photo"><img src="assets/hero.jpg" alt="A finished Just Pickle Courts pickleball court" loading="eager"></div>
         <div class="eyebrow">Phoenix-built quality — coming to your state</div>
         <h1>Design your dream court &mdash; <span class="hl">priced in 60 seconds.</span></h1>
         <p class="sub">Answer a few quick questions about your space and what you want. We'll show you a real, honest estimate &mdash; then you book a free design call to lock it in.</p>
@@ -230,8 +222,8 @@
       <div class="eyebrow">Step 4 — Pick your build</div>
       <h1>Choose your court</h1>
       <p class="sub">Both include our signature 5-day professional coating system and regulation striping.</p>
-      <div class="opt pkg" data-pkg="playReady"><div class="opt-l"><span class="icn">🟢</span><div><div class="t">The Play-Ready Court™</div><div class="d">4″ rebar slab · 3-year structural warranty · ~$7/sq ft</div></div></div><div class="px">$29,997</div></div>
-      <div class="opt pkg" data-pkg="bragWorthy"><div class="opt-l"><span class="icn">🏆</span><div><div class="t">The Brag-Worthy Court™ <span class="badge-rec">Most popular</span></div><div class="d">5″ post-tension slab · <b>Lifetime</b> structural warranty</div></div></div><div class="px">$44,997</div></div>
+      <div class="opt pkg" data-pkg="playReady"><img class="pkg-photo" src="assets/court-red.jpg" alt=""><div class="opt-l"><div><div class="t">The Play-Ready Court™</div><div class="d">4″ rebar slab · 3-year structural warranty · ~$7/sq ft</div></div></div><div class="px">$29,997</div></div>
+      <div class="opt pkg" data-pkg="bragWorthy"><img class="pkg-photo" src="assets/hero.jpg" alt=""><div class="opt-l"><div><div class="t">The Brag-Worthy Court™ <span class="badge-rec">Most popular</span></div><div class="d">5″ post-tension slab · <b>Lifetime</b> structural warranty</div></div></div><div class="px">$44,997</div></div>
       <div class="info">💡 <b>Post-tension is $15K more</b> and upgrades your structural warranty from 3-year to <b>lifetime</b>, plus dual-layer moisture control. For anyone keeping the court 10+ years, it's the last court they'll ever need.</div>
     </section>
 
