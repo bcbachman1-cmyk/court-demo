@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
+<title>Just Pickle Courts — Design & Price Your Court</title>
+<style>
+  :root{
+    --green:#15924f; --green-d:#0f7a41; --green-l:#1cb863; --court:#0f6e57;
+    --navy:#0e2233; --ink:#1b2b3a; --mut:#566778; --faint:#5b6b7d; --ball:#e4f24d;
+    --bg:#eaf1f4; --card:#ffffff; --line:#e4ecf1; --kitchen:#1d6fb8; --warn:#9a6212;
+    --shadow:0 10px 34px rgba(14,34,51,.10); --shadow-s:0 3px 12px rgba(14,34,51,.07);
+    --focus:0 0 0 3px rgba(21,146,79,.45); --r:16px;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0}
+  body{background:var(--bg);color:var(--ink);
+    font:16px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,sans-serif;
+    -webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+  .app{max-width:520px;margin:0 auto;min-height:100dvh;display:flex;flex-direction:column;
+    background:linear-gradient(180deg,#f2f7f9,var(--bg));position:relative;overflow:hidden}
+  header{padding:14px 22px 10px;position:sticky;top:0;z-index:8;
+    background:linear-gradient(180deg,rgba(242,247,249,.96),rgba(242,247,249,.82));backdrop-filter:blur(8px)}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:800;color:var(--navy);font-size:16px;letter-spacing:-.01em}
+  .mark{width:24px;height:24px;border-radius:7px;background:linear-gradient(135deg,var(--green-l),var(--court));
+    display:grid;place-items:center;box-shadow:0 2px 8px rgba(15,122,65,.4);flex:none}
+  .mark::after{content:"";width:9px;height:9px;border-radius:50%;background:var(--ball);box-shadow:0 0 0 2px rgba(255,255,255,.5)}
+  .progress{display:flex;align-items:center;gap:10px;margin-top:11px}
+  .steplbl{font-size:11px;font-weight:800;color:var(--mut);letter-spacing:.04em;white-space:nowrap;flex:none}
+  .bar{flex:1;height:5px;background:#dde7ec;border-radius:4px;overflow:hidden}
+  .bar>i{display:block;height:100%;width:8%;border-radius:4px;
+    background:linear-gradient(90deg,var(--green-l),var(--green-d));transition:width .45s cubic-bezier(.4,0,.2,1)}
+  main{flex:1;padding:8px 22px 168px}
+  .screen{display:none}
+  .screen.on{display:block;animation:slideIn .42s cubic-bezier(.16,1,.3,1)}
+  @keyframes slideIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+  .eyebrow{color:var(--green-d);font-weight:800;font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;margin:14px 0 6px}
+  h1{font-size:27px;line-height:1.16;margin:2px 0 6px;color:var(--navy);letter-spacing:-.025em;font-weight:800}
+  h1 .hl{color:var(--green-d)}
+  .sub{color:var(--mut);font-size:15px;margin:0 0 20px;line-height:1.5}
+  /* option cards */
+  .opt{background:var(--card);border:1.5px solid var(--line);border-radius:var(--r);padding:16px 17px;margin-bottom:12px;
+    cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:13px;box-shadow:var(--shadow-s);
+    transition:transform .12s,border-color .12s,box-shadow .12s;position:relative}
+  .opt:active{transform:scale(.99)} .opt:hover{border-color:#c3d4de}
+  .opt:focus-visible,.pill:focus-visible,.slot:focus-visible,.cta:focus-visible,.field:focus-visible,.skipbtn:focus-visible{outline:none;box-shadow:var(--focus)}
+  .opt.sel{border-color:var(--green);box-shadow:0 0 0 3px rgba(21,146,79,.14),var(--shadow-s)}
+  .opt .t{font-weight:750;color:var(--navy);font-size:16px;line-height:1.25}
+  .opt .d{color:var(--mut);font-size:13px;margin-top:3px;line-height:1.4}
+  .opt .px{font-weight:800;color:var(--green-d);white-space:nowrap;font-variant-numeric:tabular-nums;font-size:15px}
+  .opt .chk{width:25px;height:25px;border-radius:50%;border:2px solid #d3dee5;flex:none;display:grid;place-items:center;
+    color:#fff;font-size:13px;transition:.12s}
+  .opt.sel .chk{background:var(--green);border-color:var(--green);transform:scale(1.05)}
+  .icn{width:42px;height:42px;border-radius:11px;background:#eef6f1;display:grid;place-items:center;font-size:21px;flex:none}
+  .opt-l{display:flex;align-items:center;gap:13px;min-width:0;flex:1}
+  /* priced package cards — price BELOW title so trademarks never wrap-collide */
+  .pkg{flex-direction:column;align-items:stretch}
+  .pkg .opt-l{width:100%}
+  .pkg .px{font-size:24px;margin-top:11px;text-align:left}
+  .pkg.sel::after{content:"✓";position:absolute;top:12px;right:13px;width:24px;height:24px;border-radius:50%;
+    background:var(--green);color:#fff;display:grid;place-items:center;font-size:13px;font-weight:800}
+  .badge-rec{display:inline-block;background:var(--ball);color:#5a6606;font-weight:800;font-size:10px;letter-spacing:.05em;
+    padding:3px 9px;border-radius:20px;margin-left:7px;vertical-align:middle;text-transform:uppercase}
+  .add.sel::after{content:"✓";position:absolute;top:12px;right:13px;width:22px;height:22px;border-radius:50%;
+    background:var(--green);color:#fff;display:grid;place-items:center;font-size:12px;font-weight:800}
+  .add.sel .px{visibility:hidden}
+  /* pills */
+  .pills{display:flex;gap:9px;flex-wrap:wrap;margin-bottom:13px}
+  .pills.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:9px}
+  .pill{flex:1;min-width:84px;text-align:center;background:var(--card);border:1.5px solid var(--line);border-radius:13px;
+    padding:14px 8px;cursor:pointer;font-weight:750;color:var(--navy);box-shadow:var(--shadow-s);font-size:14px;
+    transition:transform .12s,border-color .12s;line-height:1.22;position:relative}
+  .pill:active{transform:scale(.98)}
+  .pill.sel{border-color:var(--green);background:#f1faf4;box-shadow:0 0 0 3px rgba(21,146,79,.13),var(--shadow-s)}
+  .pill.sel::after{content:"✓";position:absolute;top:6px;right:7px;font-size:11px;color:var(--green);font-weight:800}
+  .pill .e{font-size:22px;display:block;margin-bottom:5px} .pill small{display:block;color:var(--mut);font-weight:600;font-size:11px;margin-top:3px}
+  .note{background:#fdf7ea;border:1px solid #f0e1bd;color:#6f5314;border-radius:13px;padding:12px 14px;font-size:13px;margin:8px 0 16px;line-height:1.5}
+  .info{background:#eef6fb;border:1px solid #cfe6f6;color:#1a4d76;border-radius:13px;padding:12px 14px;font-size:13px;margin:8px 0 16px;line-height:1.5}
+  .skipbtn{display:inline-block;background:#eef2f5;border:1.5px solid var(--line);color:var(--navy);border-radius:11px;
+    padding:11px 16px;font-weight:750;font-size:14px;cursor:pointer;font-family:inherit;margin-bottom:8px}
+  label.lbl{display:block;font-size:12px;font-weight:700;color:var(--mut);margin:2px 0 5px;letter-spacing:.02em}
+  select.field,input.field{width:100%;padding:14px 15px;border:1.5px solid var(--line);border-radius:13px;font-size:16px;
+    margin-bottom:13px;font-family:inherit;background:var(--card);color:var(--ink);box-shadow:var(--shadow-s);appearance:none}
+  select.field{background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%23566778' stroke-width='3'><path d='M6 9l6 6 6-6'/></svg>");
+    background-repeat:no-repeat;background-position:right 15px center}
+  .field::placeholder{color:#6a7a8a}
+  .field:focus{outline:none;border-color:var(--green);box-shadow:var(--focus)}
+  /* hero */
+  .hero{padding:8px 0 0;text-align:center}
+  .court-svg{width:100%;max-width:330px;margin:6px auto 4px;display:block;filter:drop-shadow(0 12px 24px rgba(15,110,87,.28))}
+  .hero h1{font-size:32px;margin-top:14px}
+  .trust-strip{display:flex;justify-content:center;gap:7px;flex-wrap:wrap;margin:16px 0 4px}
+  .chip{background:var(--card);border:1px solid var(--line);border-radius:30px;padding:7px 13px;font-size:12px;font-weight:700;
+    color:var(--ink);box-shadow:var(--shadow-s);display:flex;align-items:center;gap:6px}
+  .chip b{color:var(--green-d)}
+  .since{color:var(--faint);font-size:12px;margin-top:18px;letter-spacing:.01em}
+  /* price reveal */
+  .reveal{background:linear-gradient(180deg,#ffffff,#f1faf4);border:1px solid #c9e9d5;border-radius:22px;
+    padding:26px 18px 22px;margin:8px 0 6px;box-shadow:0 18px 50px rgba(15,110,87,.18);text-align:center;position:relative;overflow:hidden}
+  .reveal::before{content:"";position:absolute;top:-40px;left:50%;transform:translateX(-50%);width:240px;height:160px;
+    background:radial-gradient(ellipse,rgba(28,184,99,.16),transparent 70%);pointer-events:none}
+  .price-big{font-size:52px;font-weight:850;color:var(--green-d);letter-spacing:-.03em;font-variant-numeric:tabular-nums;line-height:1.04;position:relative}
+  .price-big.settle{animation:settle .22s cubic-bezier(.2,1.3,.4,1)}
+  @keyframes settle{from{transform:scale(1.04)}to{transform:scale(1)}}
+  .price-cap{color:var(--mut);font-size:13.5px;margin-top:8px;position:relative}
+  .bd-head{font-size:12px;font-weight:800;color:var(--mut);letter-spacing:.06em;text-transform:uppercase;margin:20px 0 2px}
+  .breakdown{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:6px 18px;margin:8px 0 4px;box-shadow:var(--shadow-s)}
+  .sumrow{display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid var(--line);font-size:14.5px;gap:12px}
+  .sumrow:last-child{border-bottom:none}
+  .sumrow .n{color:var(--ink)} .sumrow .n small{color:var(--faint);display:block;font-size:11.5px}
+  .sumrow .v{font-weight:750;font-variant-numeric:tabular-nums;color:var(--navy);white-space:nowrap}
+  .incl{display:grid;grid-template-columns:1fr 1fr;gap:9px 14px;margin:16px 0}
+  .incl div{font-size:13px;color:var(--ink);display:flex;gap:8px;align-items:flex-start}
+  .incl .ic{color:var(--green);font-weight:800;flex:none}
+  .excl{font-size:12px;color:var(--faint);margin:4px 0 12px;line-height:1.45}
+  .wedge{display:flex;gap:11px;align-items:flex-start;background:#f1faf4;border:1px solid #c9e9d5;border-radius:var(--r);
+    padding:14px 15px;font-size:13.5px;color:var(--ink);margin:14px 0;line-height:1.5}
+  .wedge .ic{font-size:22px;flex:none}
+  .credline{text-align:center;color:var(--faint);font-size:12px;margin:8px 0 2px}
+  /* booking */
+  .slots{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:6px}
+  .slot{border:1.5px solid var(--line);border-radius:12px;padding:13px 10px;cursor:pointer;text-align:center;
+    font-weight:750;color:var(--navy);background:var(--card);box-shadow:var(--shadow-s);font-size:14px;transition:.12s;position:relative}
+  .slot small{display:block;color:var(--mut);font-weight:600;font-size:11.5px;margin-top:2px}
+  .slot.sel{border-color:var(--green);background:#f1faf4;box-shadow:0 0 0 3px rgba(21,146,79,.13)}
+  .slot.sel::after{content:"✓";position:absolute;top:6px;right:8px;font-size:11px;color:var(--green);font-weight:800}
+  .anchor{background:#f1faf4;border:1px solid #c9e9d5;border-radius:13px;padding:13px 15px;font-size:14px;color:var(--ink);margin-bottom:16px;line-height:1.45}
+  .anchor b{color:var(--navy)}
+  .reassure{font-size:12.5px;color:var(--mut);text-align:center;margin-top:12px;line-height:1.5}
+  /* confirmation */
+  .ok{text-align:center;padding:20px 0}
+  .ok .badge{width:78px;height:78px;border-radius:50%;background:linear-gradient(135deg,var(--green-l),var(--court));
+    display:grid;place-items:center;margin:0 auto 16px;font-size:38px;box-shadow:0 10px 30px rgba(15,122,65,.4);animation:pop .5s cubic-bezier(.16,1.4,.4,1)}
+  @keyframes pop{from{transform:scale(.4);opacity:0}to{transform:scale(1);opacity:1}}
+  .recap{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:16px 18px;margin:18px 0;text-align:left;box-shadow:var(--shadow-s)}
+  .recap h3{margin:0 0 10px;font-size:13px;text-transform:uppercase;letter-spacing:.06em;color:var(--mut)}
+  .steps3{text-align:left;margin:6px 0}
+  .steps3 div{display:flex;gap:11px;align-items:flex-start;margin-bottom:11px;font-size:14px}
+  .steps3 .num{width:24px;height:24px;border-radius:50%;background:#eef6f1;color:var(--green-d);font-weight:800;display:grid;place-items:center;flex:none;font-size:13px}
+  /* footer */
+  footer{position:fixed;bottom:0;left:0;right:0;z-index:9;
+    background:linear-gradient(180deg,rgba(255,255,255,.5),#fff 36%);border-top:1px solid var(--line);
+    padding:13px 22px calc(13px + env(safe-area-inset-bottom));box-shadow:0 -6px 24px rgba(14,34,51,.07)}
+  .footin{max-width:520px;margin:0 auto;display:flex;align-items:center;gap:13px}
+  .est{flex:1;min-width:0}
+  .est .lab{font-size:10.5px;color:var(--mut);text-transform:uppercase;letter-spacing:.06em;font-weight:800}
+  .est .val{font-size:20px;font-weight:850;color:var(--navy);font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+  .est .val.building{font-size:14.5px;font-weight:700;color:var(--mut);font-style:italic}
+  button.cta{background:linear-gradient(180deg,var(--green-l),var(--green-d));color:#fff;border:0;border-radius:13px;
+    padding:15px 24px;font-size:16.5px;font-weight:800;cursor:pointer;font-family:inherit;letter-spacing:.01em;
+    box-shadow:0 6px 18px rgba(15,122,65,.36);transition:transform .12s,box-shadow .12s;white-space:nowrap}
+  button.cta:active{transform:translateY(1px)} button.cta:disabled{opacity:.38;box-shadow:none;cursor:not-allowed}
+  .cta.full{width:100%}
+  .back{background:none;border:0;color:var(--mut);font-size:14px;cursor:pointer;font-family:inherit;padding:11px 10px;min-height:44px;font-weight:700;display:flex;align-items:center;gap:3px}
+  .tag{position:fixed;top:0;right:10px;background:var(--navy);color:#fff;font-size:9px;font-weight:800;
+    letter-spacing:.06em;padding:2px 8px;border-radius:0 0 8px 8px;opacity:.7;z-index:20}
+  @media (max-width:380px){ h1{font-size:24px} .hero h1{font-size:28px} .price-big{font-size:44px} .incl{grid-template-columns:1fr} }
+  @media (prefers-reduced-motion: reduce){ .screen.on{animation:none} .badge{animation:none} .bar>i{transition:none} .price-big.settle{animation:none} }
+</style></head>
+<body>
+<div class="tag">PROTOTYPE</div>
+<div class="app">
+  <header>
+    <div class="brand"><span class="mark"></span> Just Pickle Courts</div>
+    <div class="progress"><span class="steplbl" id="step-lbl"></span><div class="bar"><i id="bar"></i></div></div>
+  </header>
+  <main>
+
+    <!-- 0 HERO -->
+    <section class="screen on" data-s="0">
+      <div class="hero">
+        <svg class="court-svg" viewBox="0 0 300 200" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <rect x="6" y="6" width="288" height="188" rx="10" fill="#15924f"/>
+          <rect x="24" y="22" width="252" height="156" rx="3" fill="#1aa85a"/>
+          <rect x="105" y="22" width="90" height="156" fill="#1d6fb8"/>
+          <g stroke="#fff" stroke-width="2.4" fill="none">
+            <rect x="24" y="22" width="252" height="156"/>
+            <line x1="150" y1="22" x2="150" y2="178"/><line x1="105" y1="22" x2="105" y2="178"/><line x1="195" y1="22" x2="195" y2="178"/>
+            <line x1="24" y1="100" x2="105" y2="100"/><line x1="195" y1="100" x2="276" y2="100"/>
+          </g>
+          <line x1="150" y1="14" x2="150" y2="186" stroke="#0e2233" stroke-width="3" stroke-dasharray="4 4" opacity=".55"/>
+          <circle cx="262" cy="36" r="7" fill="#e4f24d" stroke="#b9c92a" stroke-width="1.5"/>
+        </svg>
+        <div class="eyebrow">Phoenix-built quality — coming to your state</div>
+        <h1>Design your dream court &mdash; <span class="hl">priced in 60 seconds.</span></h1>
+        <p class="sub">Answer a few quick questions about your space and what you want. We'll show you a real, honest estimate &mdash; then you book a free design call to lock it in.</p>
+        <div class="trust-strip">
+          <span class="chip">🏆 <b>Lifetime</b> warranty available</span>
+          <span class="chip">🎾 5-day pro coating</span>
+          <span class="chip">🛠️ JPC lead on every build</span>
+        </div>
+        <button class="cta full" id="start" style="margin-top:20px">Get my estimate →</button>
+        <div class="since">Licensed &amp; bonded &middot; AZ ROC #358970 &middot; takes about 60 seconds</div>
+      </div>
+    </section>
+
+    <!-- 1 GOAL -->
+    <section class="screen" data-s="1">
+      <div class="eyebrow">Step 1 — Let's start</div>
+      <h1>What are you looking to do?</h1>
+      <p class="sub">Pick the one that fits — you can change anything later.</p>
+      <div class="opt" data-goal="new"><div class="opt-l"><span class="icn">🏗️</span><div><div class="t">Build a brand-new court</div><div class="d">Slab + 5-day pro coating, start to finish</div></div></div><div class="chk">✓</div></div>
+      <div class="opt" data-goal="resurface"><div class="opt-l"><span class="icn">🎨</span><div><div class="t">Resurface my existing court</div><div class="d">Fresh pro coating on a slab you already have</div></div></div><div class="chk">✓</div></div>
+      <div class="opt" data-goal="unsure"><div class="opt-l"><span class="icn">🤔</span><div><div class="t">I'm not sure yet</div><div class="d">Help me figure out what I need</div></div></div><div class="chk">✓</div></div>
+    </section>
+
+    <!-- 2 COURTS -->
+    <section class="screen" data-s="2">
+      <div class="eyebrow">Step 2 — How many</div>
+      <h1>How many courts?</h1>
+      <p class="sub">Most backyards fit one. More than two usually means a community or commercial space — we design those with you directly.</p>
+      <div class="pills" id="courts">
+        <div class="pill sel" data-courts="1"><span class="e">1️⃣</span>One court<small>Most homes</small></div>
+        <div class="pill" data-courts="2"><span class="e">2️⃣</span>Two courts<small>Big lots</small></div>
+        <div class="pill" data-courts="3"><span class="e">➕</span>3+ / Commercial<small>Let's talk</small></div>
+      </div>
+      <div class="info" id="commercial-note" style="display:none">🏟️ <b>Nice — that's a bigger project.</b> Multi-court &amp; commercial builds get a custom design + price, so we'll set you up with a specialist on the call instead of an instant quote.</div>
+    </section>
+
+    <!-- 3 SIZE -->
+    <section class="screen" data-s="3">
+      <div class="eyebrow">Step 3 — Your space</div>
+      <h1>How much room do you have?</h1>
+      <p class="sub">A regulation court is 30×60 ft. Don't sweat exact numbers — we confirm everything at your free site visit.</p>
+      <div class="opt" data-size="standard"><div class="opt-l"><span class="icn">✅</span><div><div class="t">Fits a standard court (≈30×60)</div><div class="d">Works for most backyards</div></div></div><div class="chk">✓</div></div>
+      <div class="opt" data-size="tight"><div class="opt-l"><span class="icn">📐</span><div><div class="t">It's a little tight</div><div class="d">We'll find the best fit</div></div></div><div class="chk">✓</div></div>
+      <div class="opt" data-size="huge"><div class="opt-l"><span class="icn">🌳</span><div><div class="t">Plenty of room / oversized</div><div class="d">Custom-sized + priced at the visit</div></div></div><div class="chk">✓</div></div>
+    </section>
+
+    <!-- 4 PACKAGE -->
+    <section class="screen" data-s="4">
+      <div class="eyebrow">Step 4 — Pick your build</div>
+      <h1>Choose your court</h1>
+      <p class="sub">Both include our signature 5-day professional coating system and regulation striping.</p>
+      <div class="opt pkg" data-pkg="playReady"><div class="opt-l"><span class="icn">🟢</span><div><div class="t">The Play-Ready Court™</div><div class="d">4″ rebar slab · 3-year structural warranty · ~$7/sq ft</div></div></div><div class="px">$29,997</div></div>
+      <div class="opt pkg" data-pkg="bragWorthy"><div class="opt-l"><span class="icn">🏆</span><div><div class="t">The Brag-Worthy Court™ <span class="badge-rec">Most popular</span></div><div class="d">5″ post-tension slab · <b>Lifetime</b> structural warranty</div></div></div><div class="px">$44,997</div></div>
+      <div class="info">💡 <b>Post-tension is $15K more</b> and upgrades your structural warranty from 3-year to <b>lifetime</b>, plus dual-layer moisture control. For anyone keeping the court 10+ years, it's the last court they'll ever need.</div>
+    </section>
+
+    <!-- 5 ADD-ONS -->
+    <section class="screen" data-s="5">
+      <div class="eyebrow">Step 5 — Make it yours</div>
+      <h1>Add-ons</h1>
+      <p class="sub">All optional — adjust any of this on your call. Want a base court? Just continue.</p>
+      <div class="eyebrow" style="margin-top:2px">Fencing (full perimeter)</div>
+      <div class="pills g4" id="fence">
+        <div class="pill sel" data-fence="0">None<small>$0</small></div>
+        <div class="pill" data-fence="7200">4′<small>$7,200</small></div>
+        <div class="pill" data-fence="10800">6′<small>$10,800</small></div>
+        <div class="pill" data-fence="12600">8′<small>$12,600</small></div>
+      </div>
+      <div class="eyebrow">Lighting (pole + footing)</div>
+      <div class="pills" id="light">
+        <div class="pill sel" data-light="0">None<small>$0</small></div>
+        <div class="pill" data-light="2750">Wired<small>$2,750</small></div>
+        <div class="pill" data-light="4175">Solar<small>$4,175</small></div>
+      </div>
+      <div class="eyebrow">Extras</div>
+      <div class="opt add" data-add="hoop" data-amt="4250"><div class="opt-l"><span class="icn">🏀</span><div><div class="t">Basketball hoop</div><div class="d">Pro glass, adjustable + install</div></div></div><div class="px">$4,250</div></div>
+      <div class="opt add" data-add="net" data-amt="1250"><div class="opt-l"><span class="icn">🎾</span><div><div class="t">Net system</div><div class="d">Semi-permanent, embedded</div></div></div><div class="px">$1,250</div></div>
+      <div class="opt add" data-add="lines" data-amt="1500"><div class="opt-l"><span class="icn">🏟️</span><div><div class="t">Multi-sport lines</div><div class="d">Add basketball / more to your court</div></div></div><div class="px">$1,500</div></div>
+      <div class="opt add" data-add="color" data-amt="500"><div class="opt-l"><span class="icn">🎨</span><div><div class="t">Premium color</div><div class="d">Red, Tournament Purple, ColorPlus Fusion</div></div></div><div class="px">$500</div></div>
+      <div class="opt add" data-add="sportwax" data-amt="1250"><div class="opt-l"><span class="icn">✨</span><div><div class="t">SportWax clear coat</div><div class="d">Speed + protection top coat</div></div></div><div class="px">$1,250</div></div>
+      <div class="opt add" data-add="bench" data-amt="1500"><div class="opt-l"><span class="icn">🪑</span><div><div class="t">6′ bench (with back)</div><div class="d">Courtside seating</div></div></div><div class="px">$1,500</div></div>
+    </section>
+
+    <!-- 6 BACKYARD -->
+    <section class="screen" data-s="6">
+      <div class="eyebrow">Step 6 — Your backyard</div>
+      <h1>A few quick site questions</h1>
+      <div class="note">📍 Low stakes — standard prep is already included. These just bracket any extra excavation, and your <b>free site visit</b> confirms the exact number. We lock it in; we never surprise you with it.</div>
+      <button class="skipbtn" id="skip-yard">✓ Looks standard — skip ahead</button>
+      <div class="eyebrow" style="margin-top:8px">What's there now, where the court would go?</div>
+      <div class="pills">
+        <div class="pill sel" data-by="surface" data-lo="0" data-hi="0"><span class="e">🌱</span>Dirt / grass<small>included</small></div>
+        <div class="pill" data-by="surface" data-lo="2700" data-hi="3600"><span class="e">🟩</span>Turf<small>+$2.7–3.6k</small></div>
+        <div class="pill" data-by="surface" data-lo="5400" data-hi="7200"><span class="e">⬜</span>Concrete / pavers<small>+$5.4–7.2k</small></div>
+      </div>
+      <div class="eyebrow">Is the area flat or sloped?</div>
+      <div class="pills">
+        <div class="pill sel" data-by="slope" data-lo="0" data-hi="0"><span class="e">📏</span>Flat<small>included</small></div>
+        <div class="pill" data-by="slope" data-lo="1000" data-hi="3000"><span class="e">📐</span>Slight slope<small>+$1–3k</small></div>
+        <div class="pill" data-by="slope" data-lo="3000" data-hi="8000"><span class="e">⛰️</span>Sloped<small>+$3–8k</small></div>
+      </div>
+      <div class="eyebrow">Backyard access for equipment?</div>
+      <div class="pills">
+        <div class="pill sel" data-by="access" data-lo="0" data-hi="0" data-flag="0"><span class="e">🚜</span>Wide / 6′+ gate<small>included</small></div>
+        <div class="pill" data-by="access" data-lo="0" data-hi="0" data-flag="1"><span class="e">🚧</span>Narrow (&lt;6′)<small>fee at visit</small></div>
+        <div class="pill" data-by="access" data-lo="0" data-hi="0" data-flag="1"><span class="e">🏠</span>No side access<small>at visit</small></div>
+      </div>
+      <div class="eyebrow">Trees / large bushes to clear?</div>
+      <div class="pills">
+        <div class="pill sel" data-by="trees" data-lo="0" data-hi="0"><span class="e">✅</span>None<small>$0</small></div>
+        <div class="pill" data-by="trees" data-lo="500" data-hi="1400"><span class="e">🌿</span>A few small<small>+$0.5–1.4k</small></div>
+        <div class="pill" data-by="trees" data-lo="1500" data-hi="3000"><span class="e">🌴</span>Large / palms<small>+$1.5–3k</small></div>
+      </div>
+    </section>
+
+    <!-- 7 LOCATION -->
+    <section class="screen" data-s="7">
+      <div class="eyebrow">Step 7 — Almost there</div>
+      <h1>Where's the court going?</h1>
+      <p class="sub">Location affects local material + crew costs — and tells us if we're building in your area yet.</p>
+      <label class="lbl" for="state">State</label>
+      <select class="field" id="state">
+        <option value="" disabled selected>Select your state…</option>
+        <option value="AZ">Arizona</option><option value="TX">Texas</option><option value="ID">Idaho</option>
+        <option value="CO">Colorado</option><option value="WA">Washington</option><option value="NV">Nevada</option>
+        <option value="UT">Utah</option><option value="NM">New Mexico</option><option value="CA">California</option>
+        <option value="OTHER">Somewhere else</option>
+      </select>
+      <div id="geo"></div>
+    </section>
+
+    <!-- 8 PRICE -->
+    <section class="screen" data-s="8">
+      <div class="reveal">
+        <div class="eyebrow" style="margin-top:0">Your custom estimate</div>
+        <div class="price-big" id="price-big" aria-live="polite" aria-atomic="true">$—</div>
+        <div class="price-cap" id="price-cap">estimated range &middot; locked at your free site visit</div>
+      </div>
+      <div class="bd-head">Here's exactly where every dollar goes</div>
+      <div class="breakdown" id="summary"></div>
+      <div id="flags"></div>
+      <div class="incl">
+        <div><span class="ic">✓</span> <span id="incl-warranty">Lifetime structural warranty</span></div>
+        <div><span class="ic">✓</span> JPC project lead on every step</div>
+        <div><span class="ic">✓</span> 5-day pro coating system</div>
+        <div><span class="ic">✓</span> Engineered drainage + slope</div>
+      </div>
+      <div class="excl" id="excl">Not included: electrical hookup for lights, permits, and gates are arranged separately (standard for every court builder).</div>
+      <div class="wedge"><span class="ic">🏗️</span><div><b>How we build in your area:</b> a JPC project lead runs every step and holds the crew to the exact standards we built our name on in Arizona — same playbook, same checklist, your backyard.</div></div>
+      <div class="credline">Licensed &amp; bonded &middot; AZ ROC #358970</div>
+    </section>
+
+    <!-- 9 BOOK -->
+    <section class="screen" data-s="9">
+      <div class="eyebrow">Last step</div>
+      <h1 id="book-h1">Book your free design call</h1>
+      <div class="anchor" id="book-anchor"></div>
+      <div id="book-slots">
+        <label class="lbl">Pick a time</label>
+        <div class="slots" id="slots"></div>
+      </div>
+      <label class="lbl" for="f-name">Full name</label>
+      <input class="field" id="f-name" placeholder="Full name" autocomplete="name" enterkeyhint="next" aria-label="Full name">
+      <label class="lbl" for="f-phone">Phone</label>
+      <input class="field" id="f-phone" placeholder="(555) 123-4567" autocomplete="tel" inputmode="tel" enterkeyhint="next" aria-label="Phone">
+      <label class="lbl" for="f-email">Email</label>
+      <input class="field" id="f-email" placeholder="you@email.com" autocomplete="email" inputmode="email" autocapitalize="off" autocorrect="off" enterkeyhint="done" aria-label="Email">
+      <div class="reassure">🔒 Free &middot; 15 minutes &middot; nothing due now &middot; $1,000 deposit only if you decide to move forward.</div>
+    </section>
+
+    <!-- 10 DONE -->
+    <section class="screen" data-s="10">
+      <div class="ok">
+        <div class="badge" id="ok-badge">🎉</div>
+        <h1 id="ok-h1">You're booked!</h1>
+        <p class="sub" id="ok-msg" aria-live="polite"></p>
+        <div class="recap" id="recap"></div>
+        <div class="steps3" id="next3"></div>
+      </div>
+    </section>
+  </main>
+
+  <footer id="footer">
+    <div class="footin">
+      <button class="back" id="back" style="visibility:hidden" aria-label="Go back">‹ Back</button>
+      <div class="est" id="estwrap" style="display:none">
+        <div class="lab">Your estimate</div>
+        <div class="val" id="est" aria-live="polite">—</div>
+      </div>
+      <button class="cta" id="next">Continue</button>
+    </div>
+  </footer>
+</div>
+
+<script>
+(function(){
+  var RM = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var PKG = {playReady:29997, bragWorthy:44997, renewal:7997};
+  var PKG_NAME = {playReady:"The Play-Ready Court™", bragWorthy:"The Brag-Worthy Court™", renewal:"The Brag-Worthy Renewal™"};
+  var WARRANTY = {playReady:"3-year structural warranty", bragWorthy:"Lifetime structural warranty", renewal:"Renewed coating warranty"};
+  var STATE_NAME = {AZ:"Arizona",TX:"Texas",ID:"Idaho",CO:"Colorado",WA:"Washington",NV:"Nevada",UT:"Utah",NM:"New Mexico",CA:"California",OTHER:"your area"};
+  // per-area cost zones + service-area gate (demo values)
+  var ZONE = {
+    AZ:{f:1.00,t:0,book:true}, TX:{f:1.00,t:1500,book:true}, ID:{f:1.00,t:1500,book:true},
+    CO:{f:1.08,t:2000,book:true}, WA:{f:1.18,t:2750,book:true},
+    NV:{f:1.08,t:2000,book:false}, UT:{f:1.00,t:1500,book:false}, NM:{f:1.00,t:1500,book:false},
+    CA:{f:1.30,t:3500,book:false}, OTHER:{f:1.10,t:2500,book:false}
+  };
+  var ADD_NAME={hoop:'Basketball hoop',net:'Net system',lines:'Multi-sport lines',color:'Premium color',sportwax:'SportWax clear coat',bench:'6′ bench'};
+  var PER_COURT={hoop:1,net:1,lines:1,color:1,sportwax:1}; // bench is site-wide (flat)
+
+  var S = {goal:null, courts:1, commercial:false, size:null, pkg:null, fence:0, light:0, add:{},
+    by:{surface:{lo:0,hi:0},slope:{lo:0,hi:0},access:{lo:0,hi:0},trees:{lo:0,hi:0}},
+    accessFlag:false, state:null, waitlist:false, slot:null};
+  var screen=0, MAX=10;
+  var $=function(s,e){return (e||document).querySelector(s)};
+  var $$=function(s,e){return Array.prototype.slice.call((e||document).querySelectorAll(s))};
+  function money(n){ return '$'+Math.round(n).toLocaleString('en-US'); }
+
+  function resurface(){ return S.goal==='resurface'; }
+  function base(){ return resurface()?PKG.renewal:(S.pkg?PKG[S.pkg]:0); }
+  function perCourtAddons(){ var t=S.fence+S.light; for(var k in S.add){ if(PER_COURT[k]) t+=S.add[k]; } return t; }
+  function flatAddons(){ var t=0; for(var k in S.add){ if(!PER_COURT[k]) t+=S.add[k]; } return t; }
+  function zone(){ return S.state?(ZONE[S.state]||ZONE.OTHER):{f:1,t:0,book:true}; }
+  function excav(){ if(resurface()) return {lo:0,hi:0}; var lo=0,hi=0;
+    ['surface','slope','access','trees'].forEach(function(k){lo+=S.by[k].lo;hi+=S.by[k].hi;});
+    return {lo:lo*S.courts, hi:hi*S.courts}; }
+  function courtSub(){ return (base()+perCourtAddons())*S.courts + flatAddons(); }
+  function allIn(){ var z=zone(); var zoned=Math.round(courtSub()*z.f)+z.t; var e=excav(); return {lo:zoned+e.lo, hi:zoned+e.hi}; }
+  function rangeStr(a){ return a.lo===a.hi?money(a.lo):money(a.lo)+'–'+money(a.hi); }
+
+  function priced(){ return resurface() ? !!S.state : (!!S.pkg && !S.commercial); }
+  function updateEst(){
+    var w=$('#estwrap'); var v=$('#est');
+    if(S.commercial || !priced()){ w.style.display='none'; return; }
+    if(screen>=5 && screen<8){ w.style.display='block'; v.textContent='Building your estimate…'; v.classList.add('building'); }
+    else if(screen===8){ w.style.display='block'; v.textContent=rangeStr(allIn()); v.classList.remove('building'); }
+    else w.style.display='none';
+  }
+  function canAdvance(){
+    if(screen===1) return !!S.goal;
+    if(screen===3) return !!S.size;
+    if(screen===4) return !!S.pkg;
+    if(screen===7) return !!S.state;
+    if(screen===9){ var ok=!!$('#f-name').value.trim() && !!$('#f-phone').value.trim();
+      return (S.commercial||S.waitlist) ? ok : (ok && !!S.slot); }
+    return true;
+  }
+  function refreshNext(){
+    var n=$('#next'); n.disabled=!canAdvance();
+    var label='Continue';
+    if(screen===6) label='See my estimate →';
+    else if(screen===7) label = (S.commercial||resurface()) ? 'Reveal my estimate →' : 'Reveal my estimate →';
+    else if(screen===8) label = S.waitlist ? 'Join the waitlist' : (S.commercial?'Talk to a specialist':'Book my free call');
+    else if(screen===9) label = S.commercial ? 'Request my call' : (S.waitlist?'Join the waitlist':'Confirm booking');
+    n.textContent=label;
+    $('#footer').style.display = (screen===0||screen===10) ? 'none' : 'block';
+  }
+
+  function animatePrice(a){
+    var el=$('#price-big'); var lo=a.lo, hi=a.hi;
+    function done(){ el.textContent=rangeStr(a); el.setAttribute('aria-label','Your estimate: '+rangeStr(a)); el.classList.add('settle'); }
+    if(RM){ done(); return; }
+    var dur=750,t0=null;
+    function frame(ts){ if(!t0)t0=ts; var p=Math.min(1,(ts-t0)/dur); var e=1-Math.pow(1-p,3);
+      el.textContent = lo===hi?money(Math.round(lo*e)):money(Math.round(lo*e))+'–'+money(Math.round(hi*e));
+      if(p<1) requestAnimationFrame(frame); else done(); }
+    requestAnimationFrame(frame);
+  }
+
+  function show(n){
+    screen=n;
+    $$('.screen').forEach(function(s){ s.classList.toggle('on', +s.getAttribute('data-s')===n); });
+    $('#bar').style.width = n>=10?'100%':Math.max(8,Math.round(n/MAX*100))+'%';
+    $('header .progress').style.visibility = (n>0&&n<10) ? 'visible':'hidden';
+    $('#step-lbl').textContent = (n>0&&n<10) ? ('Step '+Math.min(n,9)+' of 9') : '';
+    $('#back').style.visibility = (n>1&&n<10) ? 'visible':'hidden';
+    if(n===8){ $('#price-big').classList.remove('settle'); renderSummary(); animatePrice(allIn()); }
+    if(n===9) prepBooking();
+    if(n===10) prepDone();
+    updateEst(); refreshNext(); window.scrollTo(0,0);
+  }
+
+  function renderSummary(){
+    var z=zone(), rows='', cs=courtSub();
+    var nm=PKG_NAME[resurface()?'renewal':S.pkg]||'Court';
+    if(resurface()){
+      rows+=row(nm+' <small>standard court resurface</small>', money(PKG.renewal));
+    } else {
+      rows+=row(nm+(S.courts>1?(' × '+S.courts):''), money(base()*S.courts));
+      if(S.fence) rows+=row('Fencing'+(S.courts>1?' × '+S.courts:''), '+'+money(S.fence*S.courts));
+      if(S.light) rows+=row('Lighting'+(S.courts>1?' × '+S.courts:''), '+'+money(S.light*S.courts));
+      for(var k in S.add){ var mult=PER_COURT[k]?S.courts:1; rows+=row(ADD_NAME[k]||k, '+'+money(S.add[k]*mult)); }
+    }
+    if(z.f!==1) rows+=row('Regional adjustment <small>'+STATE_NAME[S.state]+' · ×'+z.f.toFixed(2)+'</small>', '+'+money(Math.round(cs*z.f)-cs));
+    if(z.t) rows+=row('Travel / logistics', '+'+money(z.t));
+    if(!resurface()){ var e=excav();
+      rows+= (e.lo||e.hi) ? row('Rough site-prep extras <small>confirmed at visit</small>', (e.lo===e.hi?'+'+money(e.lo):'+'+money(e.lo)+'–'+money(e.hi)))
+                          : row('Site-prep <small>standard prep included</small>', 'included');
+    }
+    $('#summary').innerHTML=rows;
+    // contextual flags
+    var f='';
+    if(S.accessFlag) f+='<div class="note">🚧 <b>Tight / no side access:</b> an access fee may apply — we confirm the exact amount at your visit (not included above).</div>';
+    if(S.size==='huge' && !resurface()) f+='<div class="note">📐 <b>Oversized court:</b> the price above is a standard-court starting point — your custom size is measured and priced at the visit.</div>';
+    if(S.courts>1) f+='<div class="note">🏟️ <b>'+S.courts+'-court estimate</b> assumes comparable courts; we itemize the exact multi-court build at your visit.</div>';
+    $('#flags').innerHTML=f;
+    // included list reflects the chosen warranty + whether lights need electrical
+    $('#incl-warranty').textContent = WARRANTY[resurface()?'renewal':S.pkg] || 'Structural warranty';
+    $('#excl').style.display = (S.light||!resurface()) ? 'block' : 'none';
+    $('#excl').innerHTML = S.light ? 'Lighting is the pole + footing only — electrical hookup is arranged separately (standard for every builder). Permits and gates are also separate.'
+                                   : 'Not included: permits and gates are arranged separately (standard for every court builder).';
+  }
+  function row(n,v){ return '<div class="sumrow"><span class="n">'+n+'</span><span class="v">'+v+'</span></div>'; }
+
+  function genSlots(){
+    var out=[]; var names=['Sun','Mon','Tue','Wed','Thu','Fri','Sat']; var mons=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    var times=['10:00 AM','2:00 PM','4:30 PM','9:00 AM']; var d=new Date(); var added=0; d.setDate(d.getDate()+1);
+    while(added<4){ var wd=d.getDay(); if(wd!==0){ var t=times[added]; var lbl=names[wd]+' '+mons[d.getMonth()]+' '+d.getDate();
+      out.push({val:lbl+' · '+t, day:names[wd]+' '+mons[d.getMonth()]+' '+d.getDate(), time:t}); added++; } d.setDate(d.getDate()+1); }
+    return out;
+  }
+  function prepBooking(){
+    var slots=genSlots();
+    $('#slots').innerHTML = slots.map(function(s){ return '<div class="slot" data-slot="'+s.val+'" role="radio" tabindex="0">'+s.day+'<small>'+s.time+'</small></div>'; }).join('');
+    $$('#slots .slot').forEach(function(el){ el.onclick=function(){ S.slot=el.getAttribute('data-slot');
+      $$('#slots .slot').forEach(function(x){x.classList.remove('sel');x.setAttribute('aria-checked','false')}); el.classList.add('sel'); el.setAttribute('aria-checked','true'); refreshNext(); }; });
+    var a=$('#book-anchor');
+    if(S.commercial){ $('#book-h1').textContent='Talk to a court specialist';
+      a.innerHTML='<b>Multi-court / commercial build.</b> Pick a time and a specialist will design + price it with you on a quick call.'; $('#book-slots').style.display='block';
+    } else if(S.waitlist){ $('#book-h1').textContent='Get on the waitlist';
+      a.innerHTML='Here\'s your estimate: <b>'+rangeStr(allIn())+'</b> — and your spot to be <b>first</b> when we launch in '+STATE_NAME[S.state]+'. Leave your details and we\'ll reach out the moment we\'re building there.';
+      $('#book-slots').style.display='none';
+    } else { $('#book-h1').textContent='Book your free design call';
+      a.innerHTML='Lock in your <b>'+(PKG_NAME[resurface()?'renewal':S.pkg]||'court')+'</b> at <b>'+rangeStr(allIn())+'</b> on a free 15-minute video call.'; $('#book-slots').style.display='block';
+    }
+  }
+  function prepDone(){
+    $('header .progress').style.visibility='hidden';
+    var recap='', next='';
+    if(!S.commercial && !S.waitlist){
+      recap='<h3>Your court</h3><div class="sumrow"><span class="n">'+(PKG_NAME[resurface()?'renewal':S.pkg]||'Court')+(S.courts>1?' × '+S.courts:'')+'</span><span class="v">'+rangeStr(allIn())+'</span></div>';
+      next='<div><span class="num">1</span><div>We\'ll call you '+(S.slot||'')+' to finalize your design + price.</div></div>'+
+           '<div><span class="num">2</span><div>If it\'s a fit, a $1,000 deposit locks your build slot.</div></div>'+
+           '<div><span class="num">3</span><div>We schedule your free site visit and get building.</div></div>';
+    }
+    $('#recap').innerHTML=recap; $('#recap').style.display=recap?'block':'none';
+    $('#next3').innerHTML=next;
+    if(S.waitlist){ $('#ok-badge').textContent='✅'; $('#ok-h1').textContent="You're on the list!";
+      $('#ok-msg').textContent="We'll reach out the moment JPC launches in "+STATE_NAME[S.state]+". Thanks for your interest!";
+    } else if(S.commercial){ $('#ok-badge').textContent='🤝'; $('#ok-h1').textContent="Request received!";
+      $('#ok-msg').textContent="A court specialist will reach out"+(S.slot?(" around "+S.slot):"")+" to design your project. Talk soon!";
+    } else { $('#ok-badge').textContent='🎉'; $('#ok-h1').textContent="You're booked!";
+      $('#ok-msg').textContent="We'll see you "+(S.slot||'')+". We'll email you the call details shortly."; }
+  }
+
+  // ---- interactions ----
+  $('#start').onclick=function(){ show(1); };
+  $$('[data-goal]').forEach(function(o){o.onclick=function(){ S.goal=o.getAttribute('data-goal');
+    if(resurface()) S.pkg='renewal'; selOne('[data-goal]',o); refreshNext(); };});
+  $$('[data-courts]').forEach(function(p){p.onclick=function(){ S.courts=+p.getAttribute('data-courts');
+    S.commercial=(S.courts>=3); selGrp('#courts .pill',p); $('#commercial-note').style.display=S.commercial?'block':'none'; updateEst(); refreshNext(); };});
+  $$('[data-size]').forEach(function(o){o.onclick=function(){ S.size=o.getAttribute('data-size'); selOne('[data-size]',o); refreshNext(); };});
+  $$('[data-pkg]').forEach(function(o){o.onclick=function(){ S.pkg=o.getAttribute('data-pkg'); selOne('[data-pkg]',o); updateEst(); refreshNext(); };});
+  $$('[data-fence]').forEach(function(p){p.onclick=function(){ S.fence=+p.getAttribute('data-fence'); selGrp('#fence .pill',p); updateEst(); };});
+  $$('[data-light]').forEach(function(p){p.onclick=function(){ S.light=+p.getAttribute('data-light'); selGrp('#light .pill',p); updateEst(); };});
+  $$('[data-add]').forEach(function(o){o.onclick=function(){ var k=o.getAttribute('data-add'),amt=+o.getAttribute('data-amt');
+    if(S.add[k]){delete S.add[k];o.classList.remove('sel');o.setAttribute('aria-pressed','false');}else{S.add[k]=amt;o.classList.add('sel');o.setAttribute('aria-pressed','true');} updateEst(); };});
+  $$('[data-by]').forEach(function(p){p.onclick=function(){ var k=p.getAttribute('data-by');
+    S.by[k]={lo:+p.getAttribute('data-lo'),hi:+p.getAttribute('data-hi')};
+    if(k==='access') S.accessFlag = p.getAttribute('data-flag')==='1';
+    selGrp('[data-by="'+k+'"]',p); updateEst(); };});
+  $('#skip-yard').onclick=function(){ show(7); };
+  $('#state').addEventListener('change',function(){ S.state=this.value; var z=zone(); S.waitlist=!z.book;
+    $('#geo').innerHTML = z.book ? '<div class="info">✅ <b>Good news — we serve '+STATE_NAME[S.state]+'.</b> Continue to see your estimate.</div>'
+      : '<div class="note">🚧 <b>We\'re expanding to '+STATE_NAME[S.state]+' soon.</b> You can still see your estimate and grab a waitlist spot — we\'ll reach out the moment we launch there.</div>';
+    updateEst(); refreshNext(); });
+  ['f-name','f-email','f-phone'].forEach(function(id){ $('#'+id).addEventListener('input',refreshNext); });
+
+  function selOne(sel,el){ $$(sel).forEach(function(x){x.classList.remove('sel');x.setAttribute('aria-checked','false')}); el.classList.add('sel'); el.setAttribute('aria-checked','true'); }
+  function selGrp(sel,el){ $$(sel).forEach(function(x){x.classList.remove('sel');x.setAttribute('aria-checked','false')}); el.classList.add('sel'); el.setAttribute('aria-checked','true'); }
+
+  // ---- navigation ----
+  function nextScreen(){
+    if(!canAdvance()) return;
+    var n=screen+1;
+    if(screen===1 && resurface()) n=7;                 // resurface → straight to location (no courts/size/package/backyard)
+    else if(screen===2 && S.commercial) n=9;            // commercial → specialist capture
+    else if(screen===8) n=9;
+    show(Math.min(n,MAX));
+  }
+  $('#next').onclick=nextScreen;
+  $('#back').onclick=function(){ var n=screen-1;
+    if(screen===7 && resurface()) n=1;
+    else if(screen===9 && S.commercial) n=2;
+    else if(screen===9 && S.waitlist) n=8;
+    show(Math.max(0,n)); };
+
+  // ---- a11y: roles + keyboard on every choice control ----
+  $$('.opt[data-goal],.opt[data-size],.opt[data-pkg],.pill[data-courts],.pill[data-fence],.pill[data-light],.pill[data-by]').forEach(function(el){
+    el.setAttribute('role','radio'); el.setAttribute('tabindex','0'); el.setAttribute('aria-checked', el.classList.contains('sel')?'true':'false'); });
+  $$('.opt[data-add]').forEach(function(el){ el.setAttribute('role','button'); el.setAttribute('tabindex','0'); el.setAttribute('aria-pressed','false'); });
+  document.addEventListener('keydown',function(e){
+    if((e.key==='Enter'||e.key===' '||e.key==='Spacebar') && e.target && e.target.matches && e.target.matches('.opt,.pill,.slot,.skipbtn')){ e.preventDefault(); e.target.click(); }});
+
+  show(0);
+})();
+</script>
+</body></html>
